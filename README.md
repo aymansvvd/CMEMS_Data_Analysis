@@ -11,7 +11,9 @@ This script retrieves oceanographic data from CMEMS using the provided CMEMS Use
 #### Usage:
 1. Update the `USERNAME` and `PASSWORD` variables with your CMEMS credentials.
 2. Modify the `serviceID`, `productID`, `lon`, `lat`, `start_year`, and `end_year` variables to specify the desired CMEMS dataset, geographical region, and time period.
-3. Run the script to retrieve the data. The downloaded files will be saved in the specified output directory.
+   - Ensure that the selected lon and lat values fall within the bounds of water pixels in the satellite imagery.
+   - Confirm that the chosen start_year and end_year are accessible for the selected product.
+4. Run the script to retrieve the data. The downloaded files will be saved in the specified output directory.
 
 ### SST_Data_Processing.py
 
