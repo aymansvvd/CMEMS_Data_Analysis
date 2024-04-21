@@ -26,11 +26,14 @@ This script processes and analyzes oceanographic data retrieved from CMEMS. It r
 
 ### SSS_Data_Retrieval.py
 
-This script retrieves oceanographic data from CMEMS for Sea Surface Salinity (SSS) using the provided CMEMS User Parameters and API Parameters. It downloads SSS data in NetCDF format for a specified geographical region and time period.
+This script retrieves oceanographic data from CMEMS using the provided CMEMS User Parameters and API Parameters. It downloads Sea Surface Salinity (SSS) data in NetCDF format for a specified geographical region and time period.
 
 #### Usage:
-1. Update the `USERNAME` and `PASSWORD` variables with your CMEMS credentials.
-2. Modify the `serviceID`, `productID`, `lon`, `lat`, `start_year`, and `end_year` variables to specify the desired CMEMS dataset, geographical region, and time period.
-   - Ensure that the selected `lon` and `lat` values fall within the bounds of water pixels in the satellite imagery.
-   - Confirm that the chosen `start_year` and `end_year` are accessible for the selected product.
-4. Run the script to retrieve the data. The downloaded files will be saved in the specified output directory.
+Refer to the usage instructions in [SST_Data_Retrieval.py](#sst_data_retrievalpy) for details.
+
+### SSS_Data_Processing.py
+
+This script processes and analyzes oceanographic data retrieved from CMEMS. It reads data from NetCDF and CSV files, extracts relevant information, and performs data processing tasks such as saving the processed data back to a CSV file.
+
+#### Usage:
+Refer to the usage instructions in [SST_Data_Processing.py](#sst_data_processingpy) for details.
