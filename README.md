@@ -5,6 +5,7 @@ This repository contains a set of Python tools for retrieving, processing, and a
 - **Sea Surface Temperature (SST)**
 - **Sea Surface Salinity (SSS)**
 - **Upwelling Index (UI)** based on wind stress
+- **Chlorophyll-a (CHL)**, **Plankton Functional Types (PFTs)**, and associated **optical properties**
 
 Each module operates independently but can be combined into a unified oceanographic data-processing workflow.
 
@@ -23,7 +24,7 @@ Retrieves **daily SST NetCDF files** from CMEMS based on user-defined:
 
 Files are saved using the naming format:
 
-```
+```text
 SST_YYYYMMDD.nc
 ```
 
@@ -90,11 +91,9 @@ UI = \frac{\tau_x \sin\theta - \tau_y \cos\theta}{\rho_{water} f}
 Where:
 - \(u, v\): eastward and northward wind components  
 - \(|U|\): wind magnitude  
-- \(	heta\): coastline angle (default **−32°**)  
+- \(\theta\): coastline angle (default **−32°**)  
 - \(f\): Coriolis parameter  
-- \(
-ho_{air}, 
-ho_{water}\): air and seawater densities  
+- \(\rho_{air}, \rho_{water}\): air and seawater densities  
 
 Two scripts support the full UI workflow.
 
@@ -113,7 +112,7 @@ Features include:
 
 Each output file includes:
 
-```
+```text
 time, eastward_wind, northward_wind, latitude, longitude, station_id
 ```
 
@@ -163,24 +162,95 @@ python UI_Data_Processing.py     --input  "C:\Data\wind_points.xlsx"     --outpu
 
 ---
 
+## 4. Chlorophyll-a (CHL), Plankton Functional Types (PFTs) and Optics
+
+These tools extract **Chlorophyll-a**, **Plankton Functional Types (PFTs)**, and **optical properties** (e.g. BBP, CDM) from CMEMS plankton and optics products and collocate them with in situ sample positions and dates.
+
+The workflow is:
+
+1. Download daily or gridded plankton/optics fields from CMEMS (e.g. with `CHL_PFT_Data_Retrieval.py`).  
+2. Extract CHL, PFT and optics variables at sample locations and dates using `CHL_PFT_Data_Processing.py`.
+
+### CHL_PFT_Data_Retrieval.py
+
+Retrieves CHL, PFTs and/or optics variables from CMEMS plankton and optics products using the `copernicusmarine` client.  
+Data are saved as daily NetCDF files organised by year so they can be picked up easily by the processing script.
+
+Features:
+
+- Separate configuration for **plankton** and **optics** products  
+- User-defined latitude/longitude bounding box  
+- Start and end date  
+- Custom variable lists for each product  
+- One NetCDF file per day and per product, named with the date (`YYYYMMDD_*.nc`) in a `<BASE_DIR>/<YEAR>/` folder
+
+Example usage:
+
+```bash
+python CHL_PFT_Data_Retrieval.py     --plankton-base-dir "C:\PLANKTON_BASE_DIR"     --optics-base-dir   "C:\OPTICS_BASE_DIR"     --lat-min 36.0 --lat-max 45.0     --lon-min -12.0 --lon-max -5.0     --start-date 2016-01-01     --end-date   2016-12-31     --plankton-dataset-id YOUR_PLANKTON_DATASET_ID     --optics-dataset-id   YOUR_OPTICS_DATASET_ID
+```
+
+You can also customise the plankton and optics variable lists using command-line options if needed.
+
+---
+
+### CHL_PFT_Data_Processing.py
+
+Reads an input table (Excel or CSV) with at least the following columns:
+
+- `Year`, `Month`, `Day`  
+- `LATITUDE`, `LONGITUDE`  
+
+For each row, it:
+
+1. Locates the appropriate daily plankton and optics NetCDF files in the given base directories  
+2. Finds the nearest model grid point to the station position (within a configurable tolerance)  
+3. Extracts CHL, PFT, and optics variables  
+4. Writes the results back to Excel and/or CSV, adding new columns for each extracted variable
+
+Default variables include:
+
+- **Plankton**:  
+  `CHL`, `CHL_uncertainty`, `flags`,  
+  `DIATO`, `DINO`, `HAPTO`, `GREEN`, `PROKAR`, `PROCHLO`, `MICRO`, `NANO`, `PICO`,  
+  and their corresponding `_uncertainty` fields.
+- **Optics**:  
+  `BBP`, `BBP_uncertainty`, `flags` (renamed to `flags_optics` in the output),  
+  `CDM`, `CDM_uncertainty`.
+
+Example usage:
+
+```bash
+python CHL_PFT_Data_Processing.py     --input "C:\INPUT_XLSX.xlsx"     --plankton-base-dir "C:\PLANKTON_BASE_DIR"     --optics-base-dir   "C:\OPTICS_BASE_DIR"     --output-xlsx "C:\OUTPUT_XLSX.xlsx"     --output-csv  "C:\OUTPUT_CSV.csv"
+```
+
+The script will:
+
+- Group samples by date  
+- Search for matching NetCDF files in the plankton and optics base directories (organised by year)  
+- Extract all available variables for each sample  
+- Save the updated table with added CHL, PFTs and optics columns.
+
+---
+
 ## Requirements
 
 Install dependencies:
 
 ```bash
-pip install motuclient copernicusmarine netCDF4 pandas numpy openpyxl chardet
+pip install motuclient copernicusmarine netCDF4 pandas numpy openpyxl chardet xarray
 ```
 
-Python **3.9+** recommended.
+Python **3.9+** is recommended.
 
 ---
 
 ## Notes & Recommendations
 
-- A valid CMEMS account is required, and dataset license terms must be accepted.  
-- For large temporal or spatial downloads, split requests by year.  
-- Ensure latitude values are in degrees for UI computation.  
-- CMEMS wind datasets may have hourly or daily resolution; adjust accordingly.  
+- A valid CMEMS account is required, and dataset licence terms must be accepted.  
+- For large temporal or spatial downloads, consider splitting requests by year.  
+- Ensure latitude values are in degrees for UI and CHL/PFT calculations.  
+- CMEMS datasets may have hourly or daily resolution; adjust temporal sampling in retrieval scripts accordingly.  
 - Ensure output directories exist or are created during script execution.
 
 ---
