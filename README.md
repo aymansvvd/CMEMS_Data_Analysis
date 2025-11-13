@@ -67,7 +67,7 @@ The Upwelling Index quantifies wind-driven vertical transport along a coastline.
 - Coriolis parameter
 - Coastline angle
 
-### Mathematical Formulation (GitHub-safe)
+### Mathematical Formulation
 
 Wind stress components:
 
